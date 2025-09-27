@@ -1,14 +1,23 @@
-import Animate from "@/components/Animate";
 import { Container } from "@/components/container";
-import Gaming from "@/components/Gaming";
+import Games from "@/components/games";
+import Heading from "@/components/heading";
+import Subheading from "@/components/subheading";
 
 export default function Home() {
   return (
     <div className="flex min-h-screen items-start justify-start">
       <Container className="min-h-screen px-8 pt-20 md:pt-20 md:pb-10">
-        <Animate classname="w-full flex flex-col flex-1">
-          <Gaming />
-        </Animate>
+        <div className="flex flex-col-reverse md:flex-row md:items-center">
+          {" "}
+          <Heading className="align-middle leading-none">
+            Choose a Game to Play
+          </Heading>
+        </div>
+        <Subheading>
+          I am a software engineer with a passion for building scalable and
+          efficient systems.
+        </Subheading>
+        <Games />
       </Container>
     </div>
   );

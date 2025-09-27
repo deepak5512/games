@@ -2,13 +2,14 @@ import { GAMES } from "@/config/constants";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+import Heading from "./heading";
 
 export default function Gaming() {
   return (
     <div className="flex w-full flex-1 flex-col space-y-4 sm:space-y-8">
-      <h1 className="text-2xl font-bold sm:text-3xl">
-        Choose a game and have fun!
-      </h1>
+      <Heading className="align-middle leading-none">
+        Choose a Game to Play
+      </Heading>
       <div className="flex flex-wrap gap-4">
         {/* eslint-disable-next-line */}
         {GAMES.map((game: any, index: any) => (
