@@ -3,7 +3,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/navbar";
 import { ViewTransitions } from "next-view-transitions";
-import Footer from "@/components/navbar/footer";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 
@@ -86,7 +85,6 @@ export default function RootLayout({
               }
             >
               {children}
-              <Footer />
             </div>
           </ThemeProvider>
         </body>
