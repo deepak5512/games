@@ -14,8 +14,8 @@ export default function Home() {
           </Heading>
         </div>
         <Subheading>
-          I am a software engineer with a passion for building scalable and
-          efficient systems.
+          Select from a variety of engaging games to challenge your mind and
+          have fun!
         </Subheading>
         <Games />
       </Container>
