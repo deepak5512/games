@@ -1,139 +1,192 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import AnimateX from "./AnimateX";
 import BoardLines from "./BoardLines";
 import AniamteO from "./AnimateO";
 import clsx from "clsx";
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 
+// Type definitions for clarity
+type Player = "X" | "O" | null;
+
+// Game constants
+const WINNING_COMBINATIONS = [
+  [0, 1, 2],
+  [3, 4, 5],
+  [6, 7, 8], // Rows
+  [0, 3, 6],
+  [1, 4, 7],
+  [2, 5, 8], // Columns
+  [0, 4, 8],
+  [2, 4, 6], // Diagonals
+];
+const AUTO_RESET_DELAY = 3000; // Delay for auto-restart in milliseconds
+
+/**
+ * Calculates the winner and the winning line from a board state.
+ */
+function calculateWinnerInfo(board: Player[]): {
+  winner: Player;
+  line: number[] | null;
+} {
+  for (let i = 0; i < WINNING_COMBINATIONS.length; i++) {
+    const [a, b, c] = WINNING_COMBINATIONS[i];
+    if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+      return { winner: board[a], line: [a, b, c] };
+    }
+  }
+
+  return { winner: null, line: null };
+}
+
 export default function TicTacToeVanish1v1() {
   const [turn, setTurn] = useState<"X" | "O">("X");
-  const [cells, setCells] = useState(Array(9).fill(""));
-  const [winner, setWinner] = useState<string>("");
+  const [cells, setCells] = useState<Player[]>(Array(9).fill(null));
+  const [winner, setWinner] = useState<Player | "Draw">(null);
   const [winningCells, setWinningCells] = useState<number[]>([]);
   const [isResetting, setIsResetting] = useState(false);
 
-  const winningCombos = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6],
-  ];
+  // State for each player's moves for the vanish logic
+  const [playerXMoves, setPlayerXMoves] = useState<number[]>([]);
+  const [playerOMoves, setPlayerOMoves] = useState<number[]>([]);
 
-  const handleCellClick = (index: number) => {
-    if (cells[index] !== "" || turn === "O" || winner || isResetting) return;
-    const newCells = [...cells];
-    newCells[index] = turn;
-    if (newCells[index] === "X") {
-      setTurn("O");
-    } else {
-      setTurn("X");
-    }
-    checkWinner(newCells);
-    setCells(newCells);
-  };
+  // State to track the cell that is about to vanish
+  const [vanishingCellIndex, setVanishingCellIndex] = useState<number | null>(
+    null
+  );
 
-  const checkWinner = (updatedCells: string[]) => {
-    winningCombos.forEach((combo) => {
-      const [a, b, c] = combo;
-      if (
-        updatedCells[a] &&
-        updatedCells[a] === updatedCells[b] &&
-        updatedCells[a] === updatedCells[c]
-      ) {
-        setWinner(updatedCells[a]);
-        setWinningCells(combo);
-      }
-    });
-  };
-
-  const handleComputerMove = () => {
-    const emptyCells = cells
-      .map((cell, i) => (cell === "" ? i : null))
-      .filter((cell) => cell !== null);
-    if (emptyCells.length === 0) {
-      setWinner("Draw");
-    }
-    const randomIndex = Math.floor(Math.random() * emptyCells.length);
-    const newCells = [...cells];
-    newCells[emptyCells[randomIndex]] = "O";
-    setCells(newCells);
-    checkWinner(newCells);
-    setTurn("X");
-  };
-
-  useEffect(() => {
-    if (!winner && turn === "O" && !isResetting) {
-      const timeout = setTimeout(() => {
-        handleComputerMove();
-      }, 600);
-
-      return () => {
-        clearTimeout(timeout);
-      };
-    }
-  }, [turn, winner, isResetting]);
-
-  const resetGame = () => {
+  const resetGame = useCallback(() => {
     setIsResetting(true);
-    setCells(Array(9).fill(""));
-    setWinner("");
+    setCells(Array(9).fill(null));
+    setWinner(null);
+    setWinningCells([]);
+    setPlayerXMoves([]);
+    setPlayerOMoves([]);
+    setVanishingCellIndex(null);
     setTurn("X");
     setTimeout(() => {
       setIsResetting(false);
     }, 500);
+  }, []);
+
+  const handleCellClick = (index: number) => {
+    if (cells[index] !== null || winner || isResetting) return;
+
+    const newCells = [...cells];
+    newCells[index] = turn;
+
+    if (turn === "X") {
+      const newPlayerXMoves = [...playerXMoves, index];
+      if (newPlayerXMoves.length > 3) {
+        const oldestMove = newPlayerXMoves.shift();
+        if (oldestMove !== undefined) newCells[oldestMove] = null;
+      }
+      setPlayerXMoves(newPlayerXMoves);
+      setTurn("O");
+    } else {
+      // turn === "O"
+      const newPlayerOMoves = [...playerOMoves, index];
+      if (newPlayerOMoves.length > 3) {
+        const oldestMove = newPlayerOMoves.shift();
+        if (oldestMove !== undefined) newCells[oldestMove] = null;
+      }
+      setPlayerOMoves(newPlayerOMoves);
+      setTurn("X");
+    }
+
+    setCells(newCells);
   };
+
+  // Effect to check for a winner or draw
+  useEffect(() => {
+    if (winner) return;
+    const { winner: currentWinner, line } = calculateWinnerInfo(cells);
+
+    if (currentWinner) {
+      setWinner(currentWinner);
+      setWinningCells(line!);
+    } else if (playerXMoves.length + playerOMoves.length >= 9) {
+      setWinner("Draw");
+    }
+  }, [cells, playerXMoves.length, playerOMoves.length, winner]);
+
+  // Effect to identify which cell will vanish next
+  useEffect(() => {
+    if (winner) {
+      setVanishingCellIndex(null);
+
+      return;
+    }
+    if (turn === "X" && playerXMoves.length >= 3) {
+      setVanishingCellIndex(playerXMoves[0]);
+    } else if (turn === "O" && playerOMoves.length >= 3) {
+      setVanishingCellIndex(playerOMoves[0]);
+    } else {
+      setVanishingCellIndex(null);
+    }
+  }, [turn, playerXMoves, playerOMoves, winner]);
+
+  // Effect for auto-restarting the game after it ends
+  useEffect(() => {
+    if (winner) {
+      const timer = setTimeout(() => {
+        resetGame();
+      }, AUTO_RESET_DELAY);
+
+      return () => clearTimeout(timer);
+    }
+  }, [winner, resetGame]);
 
   return (
     <>
       <div className="flex flex-1 flex-col items-center justify-center gap-12">
         <div className="relative grid grid-cols-3">
-          {cells.map((cell, index) => (
-            <div
-              key={index}
-              onClick={() => handleCellClick(index)}
-              className={clsx(
-                "group flex h-20 w-20 cursor-pointer items-center justify-center text-3xl font-bold text-white sm:h-32 sm:w-32",
-                winner
-                  ? winningCells.includes(index)
-                    ? "animate-pulse opacity-100"
-                    : "opacity-20"
-                  : "opacity-100"
-              )}
-            >
-              {cell === "X" ? <AnimateX /> : cell === "O" ? <AniamteO /> : ""}
+          {cells.map((cell, index) => {
+            const isVanishing = vanishingCellIndex === index;
 
+            return (
               <div
+                key={index}
+                onClick={() => handleCellClick(index)}
                 className={clsx(
-                  "absolute opacity-0 transition-opacity duration-300",
-                  cell === ""
-                    ? turn === "X"
-                      ? "group-hover:opacity-10"
-                      : ""
-                    : "opacity-0"
+                  "group flex h-20 w-20 cursor-pointer items-center justify-center text-3xl font-bold text-white transition-opacity duration-300 sm:h-32 sm:w-32",
+                  winner
+                    ? winningCells.includes(index)
+                      ? "animate-pulse opacity-100"
+                      : "opacity-20"
+                    : isVanishing
+                      ? "opacity-40"
+                      : "opacity-100"
                 )}
               >
-                <AnimateX />
+                {cell === "X" ? (
+                  <AnimateX />
+                ) : cell === "O" ? (
+                  <AniamteO />
+                ) : null}
+
+                {/* Show a preview of the current player's mark on hover */}
+                {cell === null && !winner && (
+                  <div
+                    className={clsx(
+                      "absolute opacity-0 transition-opacity duration-300 group-hover:opacity-10"
+                    )}
+                  >
+                    {turn === "X" ? <AnimateX /> : <AniamteO />}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
           <BoardLines />
         </div>
 
         {winner && (
-          <div className="text-center text-2xl font-bold">
-            {winner === "X"
-              ? "You Win!"
-              : winner === "O"
-                ? "You Lose!"
-                : "Draw!"}
+          <div className="animate-pulse text-center text-2xl font-bold">
+            {winner === "Draw" ? "It's a Draw!" : `Player ${winner} Wins!`}
           </div>
         )}
-        <InteractiveHoverButton onClick={() => resetGame()}>
+        <InteractiveHoverButton onClick={resetGame}>
           Reset
         </InteractiveHoverButton>
       </div>
