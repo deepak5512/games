@@ -1,5 +1,6 @@
 import Animate from "@/components/Animate";
 import { Container } from "@/components/container";
+import NineMensMorris from "@/components/games/NineMensMorris/NineMensMorris";
 import TicTacToeVanish1v1 from "@/components/games/TicTacToeVanish1v1/TicTacToe";
 import TicTacToeVanishSolo from "@/components/games/TicTacToeVanishSolo/TicTacToe";
 import Heading from "@/components/heading";
@@ -30,6 +31,14 @@ export default async function page({
                 Tic-Tac-Toe Vanish (1v1)
               </Heading>
               <TicTacToeVanish1v1 />
+            </>
+          )}
+          {game === "nine-mens-morris" && (
+            <>
+              <Heading className="mb-8 flex items-center justify-center">
+                Nine Men&#39;s Morris
+              </Heading>
+              <NineMensMorris />
             </>
           )}
         </Animate>

@@ -23,4 +23,12 @@ export const GAMES: Game[] = [
     description:
       "This is a unique twist on the classic Tic-Tac-Toe! Each player can only have a maximum of three marks on the board at any time. When a player makes their fourth move, their oldest mark vanishes, opening up new strategic possibilities.",
   },
+  {
+    id: "3",
+    name: "Nine Men's Morris",
+    link: "nine-mens-morris",
+    thumbnail: "/ninemensmorris.png",
+    description:
+      "This is a unique twist on the classic Tic-Tac-Toe! Each player can only have a maximum of three marks on the board at any time. When a player makes their fourth move, their oldest mark vanishes, opening up new strategic possibilities.",
+  },
 ];
