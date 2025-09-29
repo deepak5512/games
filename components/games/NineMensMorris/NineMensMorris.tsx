@@ -414,7 +414,7 @@ const NineMensMorris = () => {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col items-center p-4">
+    <div className="mx-auto flex w-full max-w-5xl flex-col items-center">
       <div className="grid w-full grid-cols-1 items-center gap-4 md:grid-cols-3">
         <PlayerInfo
           player="P1"
@@ -435,7 +435,7 @@ const NineMensMorris = () => {
         />
       </div>
 
-      <div className="relative my-6 aspect-square w-full max-w-[500px]">
+      <div className="relative aspect-square w-full max-w-[500px]">
         <svg viewBox="0 0 500 500">
           {/* Board Lines */}
           <path

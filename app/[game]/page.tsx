@@ -35,9 +35,9 @@ export default async function page({
           )}
           {game === "nine-mens-morris" && (
             <>
-              <Heading className="mb-8 flex items-center justify-center">
+              {/* <Heading className="mb-8 flex items-center justify-center">
                 Nine Men&#39;s Morris
-              </Heading>
+              </Heading> */}
               <NineMensMorris />
             </>
           )}
